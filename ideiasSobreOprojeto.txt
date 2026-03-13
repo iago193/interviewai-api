@@ -1,0 +1,75 @@
+# BANCO DE DADOS – SISTEMA DE PONTO COM RECONHECIMENTO FACIAL
+
+## 1. Registro de Funcionários
+
+Tabela responsável por armazenar os dados dos funcionários cadastrados no sistema, incluindo informações pessoais, setor e dados utilizados para reconhecimento facial.
+
+### TABELA: employees
+
+| id          | INT (PK)    | Identificador único do funcionário                                           
+| fullname    | VARCHAR     | Nome completo do funcionário                                                 
+| email       | VARCHAR     | Email do funcionário                                                         
+| cpf         | VARCHAR     | CPF do funcionário                                                           
+| department  | VARCHAR     | Departamento ou setor onde o funcionário trabalha                            
+| position    | VARCHAR     | Cargo do funcionário                                                         
+| facial_data | TEXT / JSON | Dados do reconhecimento facial (encoding, embedding ou referência da imagem) 
+| created_at  | TIMESTAMP   | Data de criação do registro                                                  
+| added_at    | TIMESTAMP   | Data da última atualização do registro                                       
+
+---
+
+# 2. Registro de Ponto
+
+Tabela responsável por registrar o ponto diário do funcionário, armazenando os horários de entrada, pausa para almoço, retorno e saída.
+
+Cada funcionário terá **um registro por dia**, onde os horários são preenchidos conforme ele bate o ponto.
+
+### TABELA: time_sheet
+
+| id           | INT (PK)  | Identificador único do registro de ponto        
+| employee_id  | INT (FK)  | Referência ao funcionário na tabela `employees` 
+| date         | DATE      | Data do registro de ponto                       
+| prohibited   | DATETIME  | Horário de entrada do funcionário               
+| pause        | DATETIME  | Horário de saída para pausa ou almoço           
+| retorn_pause | DATETIME  | Horário de retorno da pausa ou almoço           
+| exit         | DATETIME  | Horário de saída final do expediente            
+| created_at   | TIMESTAMP | Data de criação do registro                     
+| added_at     | TIMESTAMP | Data da última atualização do registro          
+
+
+### TABELA: employee_balance
+
+Campo	Tipo	Descrição
+id	INT (PK)	Identificador do registro
+employee_id	INT (FK)	Funcionário
+total_balance	DECIMAL(6,2)	Total acumulado do banco de horas
+updated_at	TIMESTAMP	Última atualização
+
+### Fluxo de registro de ponto
+
+Durante o dia, os horários são registrados na seguinte ordem:
+
+1. Entrada no trabalho
+2. Saída para pausa ou almoço
+3. Retorno da pausa
+4. Saída final do expediente
+
+Caso o funcionário não registre o ponto, os campos permanecem **NULL**, permitindo identificar faltas ou registros incompletos.
+
+---
+
+# API de Reconhecimento Facial
+
+O sistema utilizará a biblioteca de reconhecimento facial:
+
+**Face API**
+
+GitHub:
+https://github.com/justadudewhohacks/face-api.js
+
+A API será responsável por:
+
+* Detectar o rosto através da câmera
+* Comparar o rosto com os dados armazenados em `facial_data`
+* Identificar o funcionário
+* Registrar automaticamente o ponto no banco de dados
