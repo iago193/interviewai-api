@@ -1,0 +1,185 @@
+# BANCO DE DADOS – SISTEMA DE PONTO COM RECONHECIMENTO FACIAL
+
+---
+
+# 1. Registro de Funcionários
+
+Tabela responsável por armazenar os dados dos funcionários cadastrados no sistema, incluindo informações pessoais, setor e dados utilizados para reconhecimento facial.
+
+### TABELA: employees
+
+| Campo       | Tipo             | Descrição                                                                    |
+| ----------- | ---------------- | ---------------------------------------------------------------------------- |
+| id          | INT (PK)         | Identificador único do funcionário                                           |
+| fullname    | VARCHAR          | Nome completo do funcionário                                                 |
+| email       | VARCHAR          | Email do funcionário                                                         |
+| cpf         | VARCHAR (UNIQUE) | CPF do funcionário (valor único no sistema)                                  |
+| department  | VARCHAR          | Departamento ou setor onde o funcionário trabalha                            |
+| position    | VARCHAR          | Cargo do funcionário                                                         |
+| facial_data | TEXT / JSON      | Dados do reconhecimento facial (encoding, embedding ou referência da imagem) |
+| created_at  | TIMESTAMP        | Data de criação do registro                                                  |
+| updated_at  | TIMESTAMP        | Data da última atualização do registro                                       |
+
+---
+
+# 2. Registro de Ponto
+
+Tabela responsável por registrar o ponto diário do funcionário, armazenando os horários de entrada, pausa para almoço, retorno e saída.
+
+Cada funcionário terá **um registro por dia**, onde os horários são preenchidos conforme ele bate o ponto.
+
+### TABELA: time_sheet
+
+| Campo          | Tipo         | Descrição                                                      |
+| -------------- | ------------ | -------------------------------------------------------------- |
+| id             | INT (PK)     | Identificador único do registro de ponto                       |
+| employee_id    | INT (FK)     | Referência ao funcionário na tabela `employees`                |
+| date           | DATE         | Data do registro de ponto                                      |
+| entry_time     | DATETIME     | Horário de entrada do funcionário                              |
+| lunch_start    | DATETIME     | Horário de saída para pausa ou almoço                          |
+| lunch_end      | DATETIME     | Horário de retorno da pausa ou almoço                          |
+| exit_time      | DATETIME     | Horário de saída final do expediente                           |
+| entry_method   | VARCHAR      | Método de registro da entrada (facial, manual, admin)          |
+| exit_method    | VARCHAR      | Método de registro da saída (facial, manual, admin)            |
+| expected_hours | DECIMAL(4,2) | Quantidade de horas que o funcionário deveria trabalhar no dia |
+| worked_hours   | DECIMAL(4,2) | Quantidade de horas realmente trabalhadas                      |
+| status         | VARCHAR      | Status do dia (present, late, absent, day_off, holiday)        |
+| created_at     | TIMESTAMP    | Data de criação do registro                                    |
+| updated_at     | TIMESTAMP    | Data da última atualização do registro                         |
+
+---
+
+# 3. Banco de Horas Diário
+
+Tabela responsável por armazenar o **saldo de horas diário do funcionário**, permitindo manter histórico completo de horas extras ou faltantes.
+
+### TABELA: time_balance
+
+| Campo          | Tipo         | Descrição                                     |
+| -------------- | ------------ | --------------------------------------------- |
+| id             | INT (PK)     | Identificador do registro                     |
+| employee_id    | INT (FK)     | Referência ao funcionário                     |
+| date           | DATE         | Data do cálculo                               |
+| expected_hours | DECIMAL(5,2) | Horas esperadas no dia                        |
+| worked_hours   | DECIMAL(5,2) | Horas trabalhadas                             |
+| balance        | DECIMAL(5,2) | Diferença entre horas trabalhadas e esperadas |
+| created_at     | TIMESTAMP    | Data de criação                               |
+| updated_at     | TIMESTAMP    | Data de atualização                           |
+
+---
+
+# 4. Banco de Horas Acumulado
+
+Tabela responsável por armazenar o **saldo total acumulado de horas de cada funcionário**.
+
+### TABELA: employee_balance
+
+| Campo         | Tipo         | Descrição                         |
+| ------------- | ------------ | --------------------------------- |
+| id            | INT (PK)     | Identificador do registro         |
+| employee_id   | INT (FK)     | Funcionário                       |
+| total_balance | DECIMAL(6,2) | Total acumulado do banco de horas |
+| updated_at    | TIMESTAMP    | Última atualização                |
+
+---
+
+# 5. Jornada de Trabalho
+
+Tabela responsável por definir a **carga horária e dias de trabalho do funcionário**.
+
+### TABELA: work_schedule
+
+| Campo          | Tipo         | Descrição                             |
+| -------------- | ------------ | ------------------------------------- |
+| id             | INT (PK)     | Identificador único da jornada        |
+| employee_id    | INT (FK)     | Referência ao funcionário             |
+| entry_time     | TIME         | Horário esperado de entrada           |
+| lunch_start    | TIME         | Horário esperado de saída para almoço |
+| lunch_end      | TIME         | Horário esperado de retorno do almoço |
+| exit_time      | TIME         | Horário esperado de saída             |
+| workload_hours | DECIMAL(4,2) | Carga horária diária esperada         |
+| monday         | BOOLEAN      | Trabalha na segunda                   |
+| tuesday        | BOOLEAN      | Trabalha na terça                     |
+| wednesday      | BOOLEAN      | Trabalha na quarta                    |
+| thursday       | BOOLEAN      | Trabalha na quinta                    |
+| friday         | BOOLEAN      | Trabalha na sexta                     |
+| saturday       | BOOLEAN      | Trabalha no sábado                    |
+| sunday         | BOOLEAN      | Trabalha no domingo                   |
+| created_at     | TIMESTAMP    | Data de criação                       |
+| updated_at     | TIMESTAMP    | Data de atualização                   |
+
+---
+
+# 6. Feriados
+
+Tabela responsável por armazenar feriados do calendário, evitando que o sistema registre faltas nesses dias.
+
+### TABELA: holidays
+
+| Campo      | Tipo      | Descrição                |
+| ---------- | --------- | ------------------------ |
+| id         | INT (PK)  | Identificador do feriado |
+| date       | DATE      | Data do feriado          |
+| name       | VARCHAR   | Nome do feriado          |
+| created_at | TIMESTAMP | Data de criação          |
+
+---
+
+# 7. Registro de Foto do Ponto
+
+Tabela opcional usada para armazenar a imagem capturada no momento do registro do ponto.
+
+Isso ajuda na auditoria e evita fraudes.
+
+### TABELA: punch_photos
+
+| Campo         | Tipo      | Descrição                       |
+| ------------- | --------- | ------------------------------- |
+| id            | INT (PK)  | Identificador da imagem         |
+| time_sheet_id | INT (FK)  | Referência ao registro de ponto |
+| employee_id   | INT (FK)  | Funcionário                     |
+| photo_path    | VARCHAR   | Caminho da imagem armazenada    |
+| created_at    | TIMESTAMP | Data de criação                 |
+
+---
+
+# Fluxo de Registro de Ponto
+
+Durante o dia, os horários são registrados na seguinte ordem:
+
+1. Entrada no trabalho
+2. Saída para pausa ou almoço
+3. Retorno da pausa
+4. Saída final do expediente
+
+Caso o funcionário não registre o ponto, os campos permanecem **NULL**, permitindo identificar faltas ou registros incompletos.
+
+---
+
+# Cálculo de Horas Trabalhadas
+
+Horas trabalhadas são calculadas da seguinte forma:
+
+worked_hours = (exit_time - entry_time) - (lunch_end - lunch_start)
+
+Saldo de horas:
+
+balance = worked_hours - expected_hours
+
+---
+
+# API de Reconhecimento Facial
+
+O sistema utilizará a biblioteca de reconhecimento facial:
+
+**FaceAPI.js**
+
+GitHub:
+https://github.com/justadudewhohacks/face-api.js
+
+A API será responsável por:
+
+* Detectar o rosto através da câmera
+* Comparar o rosto com os dados armazenados em `facial_data`
+* Identificar o funcionário
+* Registrar automaticamente o ponto no banco de dados
