@@ -12,3 +12,132 @@ datasource db {
   provider = "postgresql"
 }
 
+// 1. Funcionários
+model Employee {
+  id          Int      @id @default(autoincrement())
+  fullname    String
+  email       String
+  cpf         String   @unique
+  department  String?
+  position    String?
+  facial_data String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  // Relations
+  time_sheets      TimeSheet[]
+  time_balances    TimeBalance[]
+  employee_balance EmployeeBalance?
+  work_schedule    WorkSchedule?
+  punch_photos     PunchPhoto[]
+
+  @@map("employees")
+}
+
+// 2. Registro de Ponto
+model TimeSheet {
+  id             Int       @id @default(autoincrement())
+  employee_id    Int
+  date           DateTime  @db.Date
+  entry_time     DateTime?
+  lunch_start    DateTime?
+  lunch_end      DateTime?
+  exit_time      DateTime?
+  entry_method   String?
+  exit_method    String?
+  expected_hours Decimal?  @db.Decimal(4, 2)
+  worked_hours   Decimal?  @db.Decimal(4, 2)
+  status         String?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  // Relations
+  employee     Employee     @relation(fields: [employee_id], references: [id])
+  punch_photos PunchPhoto[]
+
+  @@unique([employee_id, date])
+  @@map("time_sheet")
+}
+
+// 3. Banco de Horas Diário
+model TimeBalance {
+  id             Int      @id @default(autoincrement())
+  employee_id    Int
+  date           DateTime @db.Date
+  expected_hours Decimal? @db.Decimal(5, 2)
+  worked_hours   Decimal? @db.Decimal(5, 2)
+  balance        Decimal? @db.Decimal(5, 2)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employee_id], references: [id])
+
+  @@unique([employee_id, date])
+  @@map("time_balance")
+}
+
+// 4. Banco de Horas Acumulado
+model EmployeeBalance {
+  id            Int      @id @default(autoincrement())
+  employee_id   Int      @unique
+  total_balance Decimal  @default(0) @db.Decimal(6, 2)
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employee_id], references: [id])
+
+  @@map("employee_balance")
+}
+
+// 5. Jornada de Trabalho
+model WorkSchedule {
+  id             Int      @id @default(autoincrement())
+  employee_id    Int      @unique
+  entry_time     DateTime @db.Time()
+  lunch_start    DateTime @db.Time()
+  lunch_end      DateTime @db.Time()
+  exit_time      DateTime @db.Time()
+  workload_hours Decimal  @db.Decimal(4, 2)
+  monday         Boolean  @default(false)
+  tuesday        Boolean  @default(false)
+  wednesday      Boolean  @default(false)
+  thursday       Boolean  @default(false)
+  friday         Boolean  @default(false)
+  saturday       Boolean  @default(false)
+  sunday         Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  employee Employee @relation(fields: [employee_id], references: [id])
+
+  @@map("work_schedule")
+}
+
+// 6. Feriados
+model Holiday {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  name       String
+  created_at DateTime @default(now())
+
+  @@map("holidays")
+}
+
+// 7. Registro de Foto do Ponto
+model PunchPhoto {
+  id            Int      @id @default(autoincrement())
+  time_sheet_id Int
+  employee_id   Int
+  photo_path    String
+  created_at    DateTime @default(now())
+
+  // Relations
+  time_sheet TimeSheet @relation(fields: [time_sheet_id], references: [id])
+  employee   Employee  @relation(fields: [employee_id], references: [id])
+
+  @@map("punch_photos")
+}
+
+
