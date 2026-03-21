@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class EmployeeService {
+export class UserService {
   create(body) {
     console.log(body);
   }
