@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: 12345
-      POSTGRES_DB: rhcontrol
+      POSTGRES_DB: interviewai
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
