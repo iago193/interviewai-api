@@ -1,5 +1,4 @@
 // user/dto/create-user.dto.ts
-import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export const UserSchema = z.object({
@@ -10,4 +9,4 @@ export const UserSchema = z.object({
   loggedinemail: z.boolean(),
 });
 
-export class CreateUserDto extends createZodDto(UserSchema) {}
+export type UserType = z.infer<typeof UserSchema>;
