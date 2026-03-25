@@ -3,5 +3,6 @@ export type UserType = {
   lastname: string;
   email: string;
   cpf: string;
+  password: string;
   loggedinemail: boolean;
 };

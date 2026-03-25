@@ -23,6 +23,8 @@ export class UserService {
     const user = await this.prisma.user.create({
       data: userValidate.data!,
     });
-    return user;
+    return (({ firstname, lastname, cpf }) => ({ firstname, lastname, cpf }))(
+      user,
+    );
   }
 }

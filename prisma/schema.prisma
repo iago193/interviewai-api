@@ -20,6 +20,7 @@ model User {
   lastname    String
   email       String
   cpf         String   @unique
+  password_hash String
   loggedinemail Boolean
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

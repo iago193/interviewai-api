@@ -39,6 +39,22 @@ export class UserValidator {
     if (!/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(user.cpf))
       errors.push('cpf inválido, formato esperado: 000.000.000-00');
 
+    // password
+    if (typeof user.password !== 'string' || user.password.length === 0)
+      errors.push('password deve ser uma string não vazia');
+    if (user.password.length < 8)
+      errors.push('password deve ter pelo menos 8 caracteres');
+    if (user.password.length > 128)
+      errors.push('password não pode ter mais de 128 caracteres');
+    if (!/[A-Z]/.test(user.password))
+      errors.push('password deve conter pelo menos uma letra maiúscula');
+    if (!/[a-z]/.test(user.password))
+      errors.push('password deve conter pelo menos uma letra minúscula');
+    if (!/[0-9]/.test(user.password))
+      errors.push('password deve conter pelo menos um número');
+    if (!/[^a-zA-Z0-9]/.test(user.password))
+      errors.push('password deve conter pelo menos um caractere especial');
+
     // loggedinemail
     if (typeof user.loggedinemail !== 'boolean')
       errors.push('loggedinemail deve ser um boolean');
