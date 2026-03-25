@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { UserType } from './userType';
 import { UserSchema } from 'src/schema/userSchema';
 import { UserValidator } from 'src/validators/userValidator';
+import { hashBcrypt } from 'src/utils/bcrypt';
 
 @Injectable()
 export class UserService {
@@ -20,8 +21,18 @@ export class UserService {
       throw new BadRequestException(userValidate.errors);
     }
 
+    const { password, ...rest } = userValidate.data!;
+    const hashPassword = await hashBcrypt(password);
+
     const user = await this.prisma.user.create({
-      data: userValidate.data!,
+      data: {
+        firstname: rest.firstname,
+        lastname: rest.lastname,
+        email: rest.email,
+        cpf: rest.cpf,
+        loggedinemail: rest.loggedinemail,
+        password_hash: hashPassword,
+      },
     });
     return (({ firstname, lastname, cpf }) => ({ firstname, lastname, cpf }))(
       user,
