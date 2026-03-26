@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserType } from './userType';
 import { UserSchema } from 'src/schema/userSchema';
@@ -8,6 +12,21 @@ import { hashBcrypt } from 'src/utils/bcrypt';
 @Injectable()
 export class UserService {
   constructor(readonly prisma: PrismaService) {}
+  async index(id) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: id },
+    });
+
+    if (!user) throw new NotFoundException('Usuário não encontrado!');
+
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      cpf: user.cpf,
+    };
+  }
   async create(body: UserType) {
     const validate = UserSchema.safeParse(body);
 
