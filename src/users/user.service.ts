@@ -57,4 +57,8 @@ export class UserService {
       user,
     );
   }
+
+  edit(id: string, body: UserType) {
+    console.log(id, body);
+  }
 }
