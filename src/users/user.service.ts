@@ -8,6 +8,8 @@ import { UserType } from './userType';
 import { UserSchema } from 'src/schema/userSchema';
 import { UserValidator } from 'src/validators/userValidator';
 import { hashBcrypt } from 'src/utils/bcrypt';
+import { UserEditSchema } from 'src/schema/userEditSchema';
+import { UserEditValidator } from 'src/validators/UserEditValidator';
 
 @Injectable()
 export class UserService {
@@ -58,7 +60,30 @@ export class UserService {
     );
   }
 
-  edit(id: string, body: UserType) {
-    console.log(id, body);
+  async edit(id: string, body: UserType) {
+    const idExisting = await this.prisma.user.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!idExisting) throw new NotFoundException('ID Não encontrado');
+
+    const validate = UserEditSchema.safeParse(body);
+
+    if (!validate.success) {
+      throw new BadRequestException(validate.error.issues);
+    }
+
+    const userValidate = UserEditValidator.validate(validate.data as UserType);
+
+    if (userValidate.errors.length > 0) {
+      throw new BadRequestException(userValidate.errors);
+    }
+
+    const userEdited = await this.prisma.user.update({
+      where: { id: Number(id) },
+      data: validate.data,
+    });
+
+    return userEdited;
   }
 }
