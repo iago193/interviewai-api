@@ -10,11 +10,12 @@ import { UserValidator } from 'src/validators/userValidator';
 import { hashBcrypt } from 'src/utils/bcrypt';
 import { UserEditSchema } from 'src/schema/userEditSchema';
 import { UserEditValidator } from 'src/validators/UserEditValidator';
+import { validateId } from 'src/common/validate-id';
 
 @Injectable()
 export class UserService {
   constructor(readonly prisma: PrismaService) {}
-  async index(id) {
+  async index(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
     });
@@ -60,10 +61,8 @@ export class UserService {
     );
   }
 
-  async edit(id: string, body: UserType) {
-    const idExisting = await this.prisma.user.findUnique({
-      where: { id: Number(id) },
-    });
+  async edit(id: number, body: UserType) {
+    const idExisting = await validateId(id);
 
     if (!idExisting) throw new NotFoundException('ID Não encontrado');
 
@@ -85,5 +84,22 @@ export class UserService {
     });
 
     return userEdited;
+  }
+
+  async delete(id: number) {
+    const idExisting = await validateId(id);
+
+    if (!idExisting) throw new NotFoundException('ID Não encontrado');
+
+    const deleted = await this.prisma.user.delete({
+      where: { id },
+    });
+    return {
+      message: 'Usuário deletado com sucesso!',
+      data: {
+        name: deleted.firstname,
+        lastName: deleted.lastname,
+      },
+    };
   }
 }
