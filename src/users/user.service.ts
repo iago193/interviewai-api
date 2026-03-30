@@ -5,12 +5,12 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserType } from './userType';
-import { UserSchema } from 'src/schema/userSchema';
-import { UserValidator } from 'src/validators/userValidator';
-import { hashBcrypt } from 'src/utils/bcrypt';
-import { UserEditSchema } from 'src/schema/userEditSchema';
-import { UserEditValidator } from 'src/validators/UserEditValidator';
-import { validateId } from 'src/common/validate-id';
+import { UserSchema } from 'src/users/schema/userSchema';
+import { UserValidator } from 'src/common/validators/userValidator';
+import { hashBcrypt } from 'src/common/utils/bcrypt';
+import { UserEditSchema } from 'src/users/schema/userEditSchema';
+import { UserEditValidator } from 'src/common/validators/UserEditValidator';
+import { validateId } from 'src/common/validators/validate-id';
 
 @Injectable()
 export class UserService {
