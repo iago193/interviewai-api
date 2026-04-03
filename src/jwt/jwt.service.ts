@@ -1,11 +1,47 @@
+import crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
+
+interface TokenPayload {
+  id: number;
+  name: string;
+  lastName: string;
+}
 
 @Injectable()
 export class JwtService {
-  static generateToken(payload) {
-    return {
-      payload,
-      token: 'wdwdwdwdwdwdwdww',
+  private static base64url(obj: object): string {
+    return Buffer.from(JSON.stringify(obj))
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  }
+
+  static generateToken({ id, name, lastName }: TokenPayload): string {
+    const SECRET = process.env.JWT_SECRET;
+    const EXPIRES = process.env.JWT_EXPIRES_IN;
+
+    if (!SECRET || !EXPIRES) {
+      throw new Error('JWT_SECRET e JWT_EXPIRES_IN são obrigatórios');
+    }
+
+    const header = { alg: 'HS256', typ: 'JWT' };
+
+    const payload = {
+      sub: id,
+      name: `${name} ${lastName}`,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + parseInt(EXPIRES),
     };
+
+    const headerEncoded = JwtService.base64url(header);
+    const payloadEncoded = JwtService.base64url(payload);
+
+    const signature = crypto
+      .createHmac('sha256', SECRET)
+      .update(`${headerEncoded}.${payloadEncoded}`)
+      .digest('base64url');
+
+    return `${headerEncoded}.${payloadEncoded}.${signature}`;
   }
 }

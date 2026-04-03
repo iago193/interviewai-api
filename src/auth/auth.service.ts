@@ -23,11 +23,13 @@ export class AuthService {
       user.password_hash,
     );
 
-    if (BcryptCompare) {
-      const token = JwtService.generateToken(user);
-      return token;
-    }
-
-    throw new UnauthorizedException('Credenciais inválidas');
+    if (!BcryptCompare)
+      throw new UnauthorizedException('Credenciais inválidas');
+    const token = JwtService.generateToken({
+      id: user.id,
+      name: user.firstname,
+      lastName: user.lastname,
+    });
+    return token;
   }
 }
