@@ -30,6 +30,8 @@ export class AuthService {
       name: user.firstname,
       lastName: user.lastname,
     });
-    return token;
+    return {
+      access_token: token,
+    };
   }
 }
