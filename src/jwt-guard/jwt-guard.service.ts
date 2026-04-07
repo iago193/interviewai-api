@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  SetMetadata,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -9,6 +10,7 @@ import { Request } from 'express';
 import { JwtService } from 'src/jwt/jwt.service';
 
 export const IS_PUBLIC = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC, true);
 
 @Injectable()
 export class JwtGuardService implements CanActivate {
@@ -30,9 +32,13 @@ export class JwtGuardService implements CanActivate {
     }
 
     const token = authHeader.split(' ')[1];
-    const payload = JwtService.verifyToken(token);
 
-    request.user = payload;
-    return true;
+    try {
+      const payload = JwtService.verifyToken(token);
+      request.user = payload;
+      return true;
+    } catch {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
   }
 }
