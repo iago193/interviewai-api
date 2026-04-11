@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './authDto';
 import { compareBcryptHash } from 'src/common/utils/bcrypt';
@@ -16,7 +12,7 @@ export class AuthService {
       where: { email: body.email },
     });
 
-    if (!user) throw new NotFoundException('Credenciais inválidas');
+    if (!user) throw new UnauthorizedException('Credenciais inválidas');
 
     const BcryptCompare = await compareBcryptHash(
       body.password,
